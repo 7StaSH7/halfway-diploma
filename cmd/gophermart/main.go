@@ -28,7 +28,6 @@ func main() {
 	app := fx.New(
 		// Core
 		config.ServerModule,
-		config.DatabaseModule,
 		database.DriverModule,
 		logger.Module,
 

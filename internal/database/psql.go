@@ -22,7 +22,7 @@ var DriverModule = fx.Module("database_driver",
 
 type DriverParams struct {
 	fx.In
-	Config *config.DatabaseConfig
+	Config *config.ServerConfig
 	Logger *zap.Logger
 }
 type queryTracer struct {
@@ -109,7 +109,7 @@ func VerifyConnections(lc fx.Lifecycle, pool *pgxpool.Pool, logger *zap.Logger) 
 	})
 }
 
-func RunMigrations(lc fx.Lifecycle, cfg *config.DatabaseConfig, logger *zap.Logger) {
+func RunMigrations(lc fx.Lifecycle, cfg *config.ServerConfig, logger *zap.Logger) {
 	lc.Append(
 		fx.Hook{
 			OnStart: func(ctx context.Context) error {

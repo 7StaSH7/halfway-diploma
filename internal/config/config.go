@@ -4,6 +4,8 @@ import (
 	"flag"
 
 	"github.com/caarlos0/env"
+	_ "github.com/golang-migrate/migrate/v4/database/postgres"
+	_ "github.com/golang-migrate/migrate/v4/source/file"
 	"go.uber.org/fx"
 )
 
@@ -16,6 +18,7 @@ type ServerConfig struct {
 	Address              string `env:"ADDRESS"`
 	JWTSecret            string `env:"JWT_SECRET"`
 	AccuralSystemAddress string `env:"ACCRUAL_SYSTEM_ADDRESS"`
+	DatabaseConfig
 }
 
 func NewServerConfig() (*ServerConfig, error) {
@@ -26,11 +29,15 @@ func NewServerConfig() (*ServerConfig, error) {
 	flag.StringVar(&cfg.JWTSecret, "js", "mysuperdupersecret", "secret key for jwt")
 	flag.StringVar(&cfg.AccuralSystemAddress, "r", "http://localhost:8081", "address to accural system")
 
-	flag.Parse()
-
 	if err := env.Parse(cfg); err != nil {
 		return nil, err
 	}
+
+	if err := NewDatabaseConfig(cfg); err != nil {
+		return nil, err
+	}
+
+	flag.Parse()
 
 	return cfg, nil
 }
