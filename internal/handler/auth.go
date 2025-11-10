@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"errors"
 	"net/http"
 
 	"github.com/7StaSH7/halfway-diploma/internal/dto"
@@ -64,7 +65,7 @@ func (h *authHandler) Register(c *gin.Context) {
 		statusCode := http.StatusInternalServerError
 		errorMessage := "registration failed"
 
-		if err.Error() == "user already exists" {
+		if errors.Is(err, errors.New("user already exists")) {
 			statusCode = http.StatusConflict
 			errorMessage = "invalid credentials"
 		}

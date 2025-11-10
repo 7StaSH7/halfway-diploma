@@ -63,7 +63,6 @@ func (w *OrderWorker) Start(ctx context.Context) {
 	for {
 		select {
 		case <-ctx.Done():
-			w.logger.Info("order worker stopping")
 			return
 		case <-ticker.C:
 			if err := w.processNewOrders(ctx); err != nil {

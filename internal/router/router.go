@@ -29,7 +29,7 @@ func NewRouter(p RouterParams) *gin.Engine {
 	router := gin.New()
 
 	router.Use(gin.Recovery())
-	router.Use(ginLogger(p.Logger))
+	router.Use(requestLogger(p.Logger))
 
 	return router
 }
@@ -55,7 +55,7 @@ func RegisterAllRoutes(lc fx.Lifecycle, p RouteRegistrationParams) {
 	})
 }
 
-func ginLogger(logger *zap.Logger) gin.HandlerFunc {
+func requestLogger(logger *zap.Logger) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		start := time.Now()
 

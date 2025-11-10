@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"errors"
+	"fmt"
 
 	"github.com/7StaSH7/halfway-diploma/internal/model"
 	"github.com/7StaSH7/halfway-diploma/internal/repository"
@@ -49,7 +50,7 @@ func (s *authService) Register(ctx context.Context, username, password string) (
 	exists, err := s.userRepo.UserExists(ctx, username)
 	if err != nil {
 		s.logger.Error("failed to check user existence", zap.String("username", username))
-		return nil, "", errors.New("failed to check user existence")
+		return nil, "", fmt.Errorf("failed to check user existence: %w", err)
 	}
 
 	if exists {

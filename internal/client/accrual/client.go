@@ -49,7 +49,7 @@ type AccrualResponse struct {
 }
 
 func (c *accrualClient) GetOrderAccrual(ctx context.Context, orderNumber string) (*AccrualResponse, error) {
-	url := fmt.Sprintf("http://%s/api/orders/%s", c.baseURL, orderNumber)
+	url := fmt.Sprintf("%s/api/orders/%s", c.baseURL, orderNumber)
 
 	c.logger.Debug("making request to accrual service",
 		zap.String("url", url),

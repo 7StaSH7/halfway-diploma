@@ -9,6 +9,7 @@ import (
 
 	"github.com/7StaSH7/halfway-diploma/internal/client/accrual"
 	"github.com/7StaSH7/halfway-diploma/internal/config"
+	"github.com/7StaSH7/halfway-diploma/internal/database"
 	"github.com/7StaSH7/halfway-diploma/internal/handler"
 	"github.com/7StaSH7/halfway-diploma/internal/logger"
 	"github.com/7StaSH7/halfway-diploma/internal/middleware"
@@ -28,6 +29,7 @@ func main() {
 		// Core
 		config.ServerModule,
 		config.DatabaseModule,
+		database.DriverModule,
 		logger.Module,
 
 		// Utility
@@ -99,8 +101,6 @@ func NewHTTPServer(p ServerParams) *http.Server {
 }
 
 func RegisterServerHooks(lc fx.Lifecycle, server *http.Server, logger *zap.Logger) {
-	var listener net.Listener
-
 	lc.Append(fx.Hook{
 		OnStart: func(ctx context.Context) error {
 			ln, err := net.Listen("tcp", server.Addr)
@@ -108,12 +108,11 @@ func RegisterServerHooks(lc fx.Lifecycle, server *http.Server, logger *zap.Logge
 				logger.Error("failed to create listener", zap.Error(err), zap.String("address", server.Addr))
 				return fmt.Errorf("failed to listen on %s: %w", server.Addr, err)
 			}
-			listener = ln
 
 			logger.Info("server listener created", zap.String("address", ln.Addr().String()))
 
 			go func() {
-				if err := server.Serve(listener); err != nil && err != http.ErrServerClosed {
+				if err := server.Serve(ln); err != nil && err != http.ErrServerClosed {
 					logger.Error("server error", zap.Error(err))
 				}
 			}()

@@ -23,7 +23,7 @@ const (
 func main() {
 	dir := parseArgs()
 
-	_, cfg, err := config.NewServerConfig()
+	cfg, err := config.NewDatabaseConfig()
 	if err != nil {
 		log.Fatal(err)
 	}
