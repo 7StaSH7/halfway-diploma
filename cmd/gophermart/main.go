@@ -85,17 +85,17 @@ type ServerParams struct {
 func NewHTTPServer(p ServerParams) *http.Server {
 	p.Logger.Info("creating server",
 		zap.String("address", p.Config.Address),
-		zap.Duration("read_timeout", 15*time.Second),
-		zap.Duration("write_timeout", 15*time.Second),
-		zap.Duration("idle_timeout", 60*time.Second),
+		zap.Duration("read_timeout", time.Duration(p.Config.ReadTimeout)*time.Second),
+		zap.Duration("write_timeout", time.Duration(p.Config.WriteTimeout)*time.Second),
+		zap.Duration("idle_timeout", time.Duration(p.Config.IdleTimeout)*time.Second),
 	)
 
 	return &http.Server{
 		Addr:         p.Config.Address,
 		Handler:      p.Router,
-		ReadTimeout:  15 * time.Second,
-		WriteTimeout: 15 * time.Second,
-		IdleTimeout:  60 * time.Second,
+		ReadTimeout:  time.Duration(p.Config.ReadTimeout) * time.Second,
+		WriteTimeout: time.Duration(p.Config.WriteTimeout) * time.Second,
+		IdleTimeout:  time.Duration(p.Config.IdleTimeout) * time.Second,
 	}
 }
 

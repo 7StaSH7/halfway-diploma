@@ -18,6 +18,9 @@ type ServerConfig struct {
 	Address              string `env:"RUN_ADDRESS"`
 	JWTSecret            string `env:"JWT_SECRET"`
 	AccuralSystemAddress string `env:"ACCRUAL_SYSTEM_ADDRESS"`
+	ReadTimeout          int    `env:"READ_TIMEOUT"`
+	WriteTimeout         int    `env:"WRITE_TIMEOUT"`
+	IdleTimeout          int    `env:"IDLE_TIMEOUT"`
 	DatabaseConfig
 }
 
@@ -28,6 +31,9 @@ func NewServerConfig() (*ServerConfig, error) {
 	flag.StringVar(&cfg.Address, "a", "localhost:8080", "host to listen on")
 	flag.StringVar(&cfg.JWTSecret, "js", "mysuperdupersecret", "secret key for jwt")
 	flag.StringVar(&cfg.AccuralSystemAddress, "r", "http://localhost:8081", "address to accural system")
+	flag.IntVar(&cfg.ReadTimeout, "rt", 15, "read timeout")
+	flag.IntVar(&cfg.WriteTimeout, "wt", 15, "write timeout")
+	flag.IntVar(&cfg.IdleTimeout, "it", 60, "idle timeout")
 
 	if err := NewDatabaseConfig(cfg); err != nil {
 		return nil, err
