@@ -78,12 +78,12 @@ func (h *orderHandler) LoadOrder(c *gin.Context) {
 	if err != nil {
 		switch {
 
-		case errors.Is(err, service.OrderConflictError):
+		case errors.Is(err, service.ErrOrderConflict):
 			c.AbortWithStatusJSON(http.StatusConflict, gin.H{
 				"error": "order already exists",
 			})
 			return
-		case errors.Is(err, service.DuplicateOrderError):
+		case errors.Is(err, service.ErrDuplicateOrder):
 			c.JSON(http.StatusOK, gin.H{
 				"number": orderNumber,
 			})

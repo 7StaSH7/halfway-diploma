@@ -38,8 +38,8 @@ func NewOrderService(p OrderServiceParams) OrderService {
 	}
 }
 
-var OrderConflictError = errors.New("user already loaded order")
-var DuplicateOrderError = errors.New("user duplicate order")
+var ErrOrderConflict = errors.New("user already loaded order")
+var ErrDuplicateOrder = errors.New("user duplicate order")
 
 func (s *orderService) CreateOrder(ctx context.Context, userID, orderNumber string) (*model.Order, error) {
 	existingOrder, err := s.orderRepo.GetOrderByNumber(ctx, orderNumber)
@@ -52,14 +52,14 @@ func (s *orderService) CreateOrder(ctx context.Context, userID, orderNumber stri
 
 	if existingOrder != nil {
 		if existingOrder.UserID == userID {
-			return existingOrder, DuplicateOrderError
+			return existingOrder, ErrDuplicateOrder
 		}
 
 		s.logger.Warn("order already exists",
 			zap.String("order_number", orderNumber),
 		)
 
-		return nil, OrderConflictError
+		return nil, ErrOrderConflict
 	}
 
 	newOrder := &model.Order{

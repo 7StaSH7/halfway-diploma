@@ -65,7 +65,7 @@ func (h *authHandler) Register(c *gin.Context) {
 		statusCode := http.StatusInternalServerError
 		errorMessage := "registration failed"
 
-		if errors.Is(err, service.UserConflictError) {
+		if errors.Is(err, service.ErrUserConflict) {
 			statusCode = http.StatusConflict
 			errorMessage = "invalid credentials"
 		}
