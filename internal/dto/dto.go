@@ -30,7 +30,6 @@ func ToOrderResponse(o *model.Order) OrderResponse {
 		UploadedAt: o.CreatedAt.Format(time.RFC3339),
 	}
 
-	// Добавляем accrual только если он больше 0
 	if o.Accrual > 0 {
 		response.Accrual = float64(o.Accrual) / 100
 	}
