@@ -65,7 +65,7 @@ func (h *authHandler) Register(c *gin.Context) {
 		statusCode := http.StatusInternalServerError
 		errorMessage := "registration failed"
 
-		if errors.Is(err, errors.New("user already exists")) {
+		if errors.Is(err, service.UserConflictError) {
 			statusCode = http.StatusConflict
 			errorMessage = "invalid credentials"
 		}
@@ -114,9 +114,7 @@ func (h *authHandler) Login(c *gin.Context) {
 		zap.String("user_id", user.ID),
 		zap.String("username", user.Username))
 
-	c.JSON(http.StatusOK, gin.H{
-		"user": user.ToResponse(),
-	})
+	c.Status(http.StatusOK)
 }
 
 func (h *authHandler) setAuthCookie(c *gin.Context, token string) {

@@ -43,9 +43,9 @@ func NewAccrualClient(p AccrualClientParams) AccrualClient {
 }
 
 type AccrualResponse struct {
-	Order   string `json:"order"`
-	Status  string `json:"status"`
-	Accrual *uint  `json:"accrual,omitempty"`
+	Order   string   `json:"order"`
+	Status  string   `json:"status"`
+	Accrual *float64 `json:"accrual,omitempty"`
 }
 
 func (c *accrualClient) GetOrderAccrual(ctx context.Context, orderNumber string) (*AccrualResponse, error) {

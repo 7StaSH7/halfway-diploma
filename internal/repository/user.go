@@ -19,7 +19,7 @@ type UserRepository interface {
 	CreateUser(ctx context.Context, user *model.User) error
 	GetUserByUsername(ctx context.Context, username string) (*model.User, error)
 	GetUserByID(ctx context.Context, id string) (*model.User, error)
-	UpdateUserBalance(ctx context.Context, id string, balance int64) error
+	UpdateUserBalance(ctx context.Context, tx pgx.Tx, id string, balance uint) error
 	UserExists(ctx context.Context, username string) (bool, error)
 }
 
@@ -120,25 +120,26 @@ func (r *userRepository) GetUserByID(ctx context.Context, id string) (*model.Use
 	return &user, nil
 }
 
-func (r *userRepository) UpdateUserBalance(ctx context.Context, id string, balance int64) error {
+func (r *userRepository) UpdateUserBalance(ctx context.Context, tx pgx.Tx, id string, balance uint) error {
 	query := `
 		UPDATE users
 		SET balance = $1
 		WHERE id = $2
 	`
 
-	result, err := r.db.Exec(ctx, query, balance, id)
+	var err error
+	if tx == nil {
+		_, err = r.db.Exec(ctx, query, balance, id)
+	} else {
+		_, err = tx.Exec(ctx, query, balance, id)
+	}
+
 	if err != nil {
 		r.logger.Error("failed to update user's balance",
 			zap.Error(err),
 			zap.String("user_id", id),
-			zap.Int64("balance", balance))
+			zap.Uint("balance", balance))
 		return err
-	}
-
-	if result.RowsAffected() == 0 {
-		r.logger.Warn("user to update balance not found", zap.String("user_id", id))
-		return errors.New("user not found")
 	}
 
 	return nil

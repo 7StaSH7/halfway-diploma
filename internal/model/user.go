@@ -5,8 +5,8 @@ import "time"
 type User struct {
 	ID        string    `json:"id" db:"id"`
 	Username  string    `json:"username" db:"username"`
-	Password  string    `json:"-" db:"password"` 
-	Balance   int64     `json:"balance" db:"balance"`
+	Password  string    `json:"-" db:"password"`
+	Balance   uint      `json:"balance" db:"balance"`
 	CreatedAt time.Time `json:"created_at" db:"created_at"`
 	UpdatedAt time.Time `json:"updated_at" db:"updated_at"`
 }
@@ -14,7 +14,7 @@ type User struct {
 type UserResponse struct {
 	ID       string `json:"id"`
 	Username string `json:"username"`
-	Balance  int64  `json:"balance"`
+	Balance  uint   `json:"balance"`
 }
 
 func (u *User) ToResponse() *UserResponse {

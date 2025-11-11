@@ -45,6 +45,8 @@ func NewAuthService(p AuthServiceParams) AuthService {
 	}
 }
 
+var UserConflictError = errors.New("user already exists")
+
 func (s *authService) Register(ctx context.Context, username, password string) (*model.User, string, error) {
 	exists, err := s.userRepo.UserExists(ctx, username)
 	if err != nil {
@@ -54,7 +56,7 @@ func (s *authService) Register(ctx context.Context, username, password string) (
 
 	if exists {
 		s.logger.Warn("user already exists", zap.String("username", username))
-		return nil, "", errors.New("user already exists")
+		return nil, "", UserConflictError
 	}
 
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)

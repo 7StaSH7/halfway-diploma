@@ -20,8 +20,7 @@ type OrderRepository interface {
 	GetOrderByNumber(ctx context.Context, number string) (*model.Order, error)
 	GetUserOrders(ctx context.Context, userID string) ([]*model.Order, error)
 	GetOrdersByStatus(ctx context.Context, status model.OrderStatus) ([]*model.Order, error)
-	UpdateOrderStatus(ctx context.Context, id string, status model.OrderStatus) error
-	UpdateOrderAccrual(ctx context.Context, id string, accrual uint) error
+	UpdateOrder(ctx context.Context, tx pgx.Tx, order *model.Order) error
 }
 
 type orderRepository struct {
@@ -99,7 +98,7 @@ func (r *orderRepository) GetUserOrders(ctx context.Context, userID string) ([]*
 		SELECT id, user_id, number, status, accrual, created_at, updated_at
 		FROM orders
 		WHERE user_id = $1
-		ORDER BY created_at ASC
+		ORDER BY created_at DESC
 	`
 
 	rows, err := r.db.Query(ctx, query, userID)
@@ -139,7 +138,7 @@ func (r *orderRepository) GetOrdersByStatus(ctx context.Context, status model.Or
 		SELECT id, user_id, number, status, accrual, created_at, updated_at
 		FROM orders
 		WHERE status = $1
-		ORDER BY created_at ASC
+		ORDER BY created_at DESC
 	`
 
 	rows, err := r.db.Query(ctx, query, status)
@@ -180,58 +179,39 @@ func (r *orderRepository) GetOrdersByStatus(ctx context.Context, status model.Or
 	return orders, nil
 }
 
-func (r *orderRepository) UpdateOrderStatus(ctx context.Context, id string, status model.OrderStatus) error {
+func (r *orderRepository) UpdateOrder(ctx context.Context, tx pgx.Tx, order *model.Order) error {
 	query := `
 		UPDATE orders
-		SET status = $1, updated_at = CURRENT_TIMESTAMP
-		WHERE id = $2
+		SET user_id = $1, number = $2, status = $3, accrual = $4, updated_at = CURRENT_TIMESTAMP
+		WHERE id = $5
+		RETURNING created_at, updated_at
 	`
 
-	result, err := r.db.Exec(ctx, query, status, id)
+	var err error
+	if tx == nil {
+		err = r.db.QueryRow(ctx, query, order.UserID, order.Number, order.Status, order.Accrual, order.ID).
+			Scan(&order.CreatedAt, &order.UpdatedAt)
+	} else {
+		err = tx.QueryRow(ctx, query, order.UserID, order.Number, order.Status, order.Accrual, order.ID).
+			Scan(&order.CreatedAt, &order.UpdatedAt)
+	}
+
 	if err != nil {
-		r.logger.Error("failed to update order status",
+		if errors.Is(err, pgx.ErrNoRows) {
+			r.logger.Warn("order to update not found", zap.String("order_id", order.ID))
+			return errors.New("order not found")
+		}
+		r.logger.Error("failed to update order",
 			zap.Error(err),
-			zap.String("order_id", id),
-			zap.String("status", string(status)))
+			zap.String("order_id", order.ID))
 		return err
 	}
 
-	if result.RowsAffected() == 0 {
-		r.logger.Warn("order to update status not found", zap.String("order_id", id))
-		return errors.New("order not found")
-	}
-
-	r.logger.Debug("order status updated",
-		zap.String("order_id", id),
-		zap.String("status", string(status)))
-
-	return nil
-}
-
-func (r *orderRepository) UpdateOrderAccrual(ctx context.Context, id string, accrual uint) error {
-	query := `
-		UPDATE orders
-		SET accrual = $1, updated_at = CURRENT_TIMESTAMP
-		WHERE id = $2
-	`
-
-	result, err := r.db.Exec(ctx, query, accrual, id)
-	if err != nil {
-		r.logger.Error("failed to update order accrual",
-			zap.Error(err),
-			zap.String("order_id", id),
-			zap.Uint("accrual", accrual))
-		return err
-	}
-
-	if result.RowsAffected() == 0 {
-		r.logger.Warn("order to update accrual not found", zap.String("order_id", id))
-		return errors.New("order not found")
-	}
-
-	r.logger.Debug("order accrual updated",
-		zap.String("order_id", id),
-		zap.Uint("accrual", accrual))
+	r.logger.Debug("order updated",
+		zap.String("order_id", order.ID),
+		zap.String("order_number", order.Number),
+		zap.String("status", string(order.Status)),
+		zap.Uint("accrual", order.Accrual))
 
 	return nil
 }

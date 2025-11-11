@@ -14,6 +14,7 @@ import (
 	reflect "reflect"
 
 	model "github.com/7StaSH7/halfway-diploma/internal/model"
+	pgx "github.com/jackc/pgx/v5"
 	gomock "go.uber.org/mock/gomock"
 )
 
@@ -100,30 +101,16 @@ func (mr *MockOrderRepositoryMockRecorder) GetUserOrders(ctx, userID any) *gomoc
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserOrders", reflect.TypeOf((*MockOrderRepository)(nil).GetUserOrders), ctx, userID)
 }
 
-// UpdateOrderAccrual mocks base method.
-func (m *MockOrderRepository) UpdateOrderAccrual(ctx context.Context, id string, accrual uint) error {
+// UpdateOrder mocks base method.
+func (m *MockOrderRepository) UpdateOrder(ctx context.Context, tx pgx.Tx, order *model.Order) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UpdateOrderAccrual", ctx, id, accrual)
+	ret := m.ctrl.Call(m, "UpdateOrder", ctx, tx, order)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// UpdateOrderAccrual indicates an expected call of UpdateOrderAccrual.
-func (mr *MockOrderRepositoryMockRecorder) UpdateOrderAccrual(ctx, id, accrual any) *gomock.Call {
+// UpdateOrder indicates an expected call of UpdateOrder.
+func (mr *MockOrderRepositoryMockRecorder) UpdateOrder(ctx, tx, order any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateOrderAccrual", reflect.TypeOf((*MockOrderRepository)(nil).UpdateOrderAccrual), ctx, id, accrual)
-}
-
-// UpdateOrderStatus mocks base method.
-func (m *MockOrderRepository) UpdateOrderStatus(ctx context.Context, id string, status model.OrderStatus) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UpdateOrderStatus", ctx, id, status)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// UpdateOrderStatus indicates an expected call of UpdateOrderStatus.
-func (mr *MockOrderRepositoryMockRecorder) UpdateOrderStatus(ctx, id, status any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateOrderStatus", reflect.TypeOf((*MockOrderRepository)(nil).UpdateOrderStatus), ctx, id, status)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateOrder", reflect.TypeOf((*MockOrderRepository)(nil).UpdateOrder), ctx, tx, order)
 }

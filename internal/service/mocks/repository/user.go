@@ -14,6 +14,7 @@ import (
 	reflect "reflect"
 
 	model "github.com/7StaSH7/halfway-diploma/internal/model"
+	pgx "github.com/jackc/pgx/v5"
 	gomock "go.uber.org/mock/gomock"
 )
 
@@ -86,17 +87,17 @@ func (mr *MockUserRepositoryMockRecorder) GetUserByUsername(ctx, username any) *
 }
 
 // UpdateUserBalance mocks base method.
-func (m *MockUserRepository) UpdateUserBalance(ctx context.Context, id string, balance int64) error {
+func (m *MockUserRepository) UpdateUserBalance(ctx context.Context, tx pgx.Tx, id string, balance uint) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UpdateUserBalance", ctx, id, balance)
+	ret := m.ctrl.Call(m, "UpdateUserBalance", ctx, tx, id, balance)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // UpdateUserBalance indicates an expected call of UpdateUserBalance.
-func (mr *MockUserRepositoryMockRecorder) UpdateUserBalance(ctx, id, balance any) *gomock.Call {
+func (mr *MockUserRepositoryMockRecorder) UpdateUserBalance(ctx, tx, id, balance any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateUserBalance", reflect.TypeOf((*MockUserRepository)(nil).UpdateUserBalance), ctx, id, balance)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateUserBalance", reflect.TypeOf((*MockUserRepository)(nil).UpdateUserBalance), ctx, tx, id, balance)
 }
 
 // UserExists mocks base method.

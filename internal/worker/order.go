@@ -7,6 +7,7 @@ import (
 	"github.com/7StaSH7/halfway-diploma/internal/client/accrual"
 	"github.com/7StaSH7/halfway-diploma/internal/model"
 	"github.com/7StaSH7/halfway-diploma/internal/repository"
+	"github.com/jackc/pgx/v5/pgxpool"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
 )
@@ -18,23 +19,29 @@ var OrderWorkerModule = fx.Module("order_worker",
 
 type OrderWorker struct {
 	orderRepo     repository.OrderRepository
+	userRepo      repository.UserRepository
 	accrualClient accrual.AccrualClient
 	logger        *zap.Logger
+	dbPool        *pgxpool.Pool
 	interval      time.Duration
 }
 
 type OrderWorkerParams struct {
 	fx.In
 	OrderRepo     repository.OrderRepository
+	UserRepo      repository.UserRepository
 	AccrualClient accrual.AccrualClient
 	Logger        *zap.Logger
+	DB            *pgxpool.Pool
 }
 
 func NewOrderWorker(p OrderWorkerParams) *OrderWorker {
 	return &OrderWorker{
 		orderRepo:     p.OrderRepo,
+		userRepo:      p.UserRepo,
 		accrualClient: p.AccrualClient,
 		logger:        p.Logger,
+		dbPool:        p.DB,
 		interval:      5 * time.Second,
 	}
 }
@@ -103,16 +110,45 @@ func (w *OrderWorker) processOrder(ctx context.Context, order *model.Order) erro
 
 	switch accrualResp.Status {
 	case "INVALID":
-		return w.orderRepo.UpdateOrderStatus(ctx, order.ID, model.OrderStatusInvalid)
+		order.Status = model.OrderStatusInvalid
+		return w.orderRepo.UpdateOrder(ctx, nil, order)
 	case "PROCESSING":
-		return w.orderRepo.UpdateOrderStatus(ctx, order.ID, model.OrderStatusProcessing)
+		order.Status = model.OrderStatusProcessing
+		return w.orderRepo.UpdateOrder(ctx, nil, order)
 	case "PROCESSED":
+		tx, err := w.dbPool.Begin(ctx)
+		if err != nil {
+			return err
+		}
+		defer tx.Rollback(ctx)
+
+		order.Status = model.OrderStatusProcessed
 		if accrualResp.Accrual != nil {
-			if err := w.orderRepo.UpdateOrderAccrual(ctx, order.ID, *accrualResp.Accrual); err != nil {
-				return err
+			if *accrualResp.Accrual >= 0 {
+				order.Accrual = uint(*accrualResp.Accrual * 100)
 			}
 		}
-		return w.orderRepo.UpdateOrderStatus(ctx, order.ID, model.OrderStatusProcessed)
+
+		if err := w.orderRepo.UpdateOrder(ctx, tx, order); err != nil {
+			return err
+		}
+
+		if accrualResp.Accrual != nil && *accrualResp.Accrual > 0 {
+			user, err := w.userRepo.GetUserByID(ctx, order.UserID)
+			if err != nil {
+				return err
+			}
+
+			if user != nil {
+				accrualValue := uint(*accrualResp.Accrual * 100)
+				newBalance := user.Balance + accrualValue
+				if err := w.userRepo.UpdateUserBalance(ctx, tx, user.ID, newBalance); err != nil {
+					return err
+				}
+			}
+		}
+
+		return tx.Commit(ctx)
 	case "REGISTERED":
 		return nil
 	default:

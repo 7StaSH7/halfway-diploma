@@ -40,7 +40,7 @@ func TestAuthService_Register(t *testing.T) {
 					DoAndReturn(func(ctx context.Context, user *model.User) error {
 						assert.Equal(t, username, user.Username)
 						assert.NotEmpty(t, user.Password)
-						assert.Equal(t, int64(0), user.Balance)
+						assert.Equal(t, uint(0), user.Balance)
 						err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password))
 						assert.NoError(t, err)
 						return nil
@@ -54,14 +54,14 @@ func TestAuthService_Register(t *testing.T) {
 						return token, nil
 					})
 			},
-			username:      "testuser",
-			password:      "testpassword",
-			expectError:   false,
+			username:    "testuser",
+			password:    "testpassword",
+			expectError: false,
 			validateResult: func(t *testing.T, user *model.User, token string, err error) {
 				assert.NoError(t, err)
 				assert.NotNil(t, user)
 				assert.Equal(t, "testuser", user.Username)
-				assert.Equal(t, int64(0), user.Balance)
+				assert.Equal(t, uint(0), user.Balance)
 				assert.Equal(t, "test-token", token)
 			},
 		},
@@ -87,7 +87,7 @@ func TestAuthService_Register(t *testing.T) {
 			username:      "testuser",
 			password:      "testpassword",
 			expectError:   true,
-			expectedError: "failed to check user existence",
+			expectedError: "failed to check user existence: database error",
 		},
 		{
 			name: "error creating user",
@@ -185,8 +185,8 @@ func TestAuthService_Login(t *testing.T) {
 					GenerateToken(user.ID).
 					Return(token, nil)
 			},
-			username:  "testuser",
-			password:  "testpassword",
+			username: "testuser",
+			password: "testpassword",
 			setupUser: func() *model.User {
 				userID := uuid.New().String()
 				hashedPassword, _ := bcrypt.GenerateFromPassword([]byte("testpassword"), bcrypt.DefaultCost)
@@ -341,8 +341,8 @@ func TestAuthService_ValidateToken(t *testing.T) {
 					ValidateToken(tokenString).
 					Return(claims, nil)
 			},
-			tokenString:   "test-token",
-			expectError:   false,
+			tokenString: "test-token",
+			expectError: false,
 			validateResult: func(t *testing.T, userID string, err error) {
 				assert.NoError(t, err)
 				assert.NotEmpty(t, userID)

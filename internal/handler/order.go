@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"errors"
 	"net/http"
 
 	"github.com/7StaSH7/halfway-diploma/internal/dto"
@@ -75,9 +76,16 @@ func (h *orderHandler) LoadOrder(c *gin.Context) {
 	ctx := c.Request.Context()
 	orderModel, err := h.orderService.CreateOrder(ctx, userID, orderNumber)
 	if err != nil {
-		if err.Error() == "order already exists" {
+		switch {
+
+		case errors.Is(err, service.OrderConflictError):
 			c.AbortWithStatusJSON(http.StatusConflict, gin.H{
 				"error": "order already exists",
+			})
+			return
+		case errors.Is(err, service.DuplicateOrderError):
+			c.JSON(http.StatusOK, gin.H{
+				"number": orderNumber,
 			})
 			return
 		}
@@ -92,17 +100,12 @@ func (h *orderHandler) LoadOrder(c *gin.Context) {
 		return
 	}
 
-	statusCode := http.StatusAccepted
-	if orderModel.Status != "NEW" || orderModel.Accrual != 0 {
-		statusCode = http.StatusOK
-	}
-
 	h.logger.Info("order loaded successfully",
 		zap.String("user_id", userID),
 		zap.String("order_number", orderNumber),
 		zap.String("order_id", orderModel.ID))
 
-	c.JSON(statusCode, gin.H{
+	c.JSON(http.StatusAccepted, gin.H{
 		"number": orderNumber,
 	})
 }

@@ -37,6 +37,7 @@ func main() {
 		// Repositories
 		repository.OrderModule,
 		repository.UserModule,
+		repository.WithdrawalModule,
 
 		// Middlewares
 		middleware.AuthModule,
@@ -44,6 +45,7 @@ func main() {
 		// Services
 		service.AuthModule,
 		service.OrderModule,
+		service.BalanceModule,
 
 		// Clients
 		accrual.Module,
@@ -55,6 +57,7 @@ func main() {
 		handler.AuthModule,
 		handler.HealthModule,
 		handler.OrderModule,
+		handler.BalanceModule,
 
 		// Router
 		router.Module,
