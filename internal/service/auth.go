@@ -38,7 +38,6 @@ type AuthServiceParams struct {
 }
 
 func NewAuthService(p AuthServiceParams) AuthService {
-	p.Logger.Info("Creating auth service")
 	return &authService{
 		userRepo:   p.UserRepo,
 		jwtService: p.JWTService,

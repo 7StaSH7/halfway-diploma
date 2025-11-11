@@ -15,7 +15,7 @@ var ServerModule = fx.Module("config",
 
 type ServerConfig struct {
 	LogLevel             string `env:"LOG_LEVEL"`
-	Address              string `env:"ADDRESS"`
+	Address              string `env:"RUN_ADDRESS"`
 	JWTSecret            string `env:"JWT_SECRET"`
 	AccuralSystemAddress string `env:"ACCRUAL_SYSTEM_ADDRESS"`
 	DatabaseConfig

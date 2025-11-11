@@ -7,7 +7,7 @@ import (
 )
 
 type DatabaseConfig struct {
-	URL     string `env:"DATABASE_DSN"`
+	URL     string `env:"DATABASE_URI"`
 	MaxConn int    `env:"DATABASE_MAX_CONN"`
 	MinConn int    `env:"DATABASE_MIN_CONN"`
 }
