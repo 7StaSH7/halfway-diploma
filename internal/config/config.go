@@ -3,7 +3,7 @@ package config
 import (
 	"flag"
 
-	"github.com/caarlos0/env"
+	"github.com/caarlos0/env/v11"
 	_ "github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 	"go.uber.org/fx"
@@ -29,15 +29,15 @@ func NewServerConfig() (*ServerConfig, error) {
 	flag.StringVar(&cfg.JWTSecret, "js", "mysuperdupersecret", "secret key for jwt")
 	flag.StringVar(&cfg.AccuralSystemAddress, "r", "http://localhost:8081", "address to accural system")
 
-	if err := env.Parse(cfg); err != nil {
-		return nil, err
-	}
-
 	if err := NewDatabaseConfig(cfg); err != nil {
 		return nil, err
 	}
 
 	flag.Parse()
+
+	if err := env.Parse(cfg); err != nil {
+		return nil, err
+	}
 
 	return cfg, nil
 }

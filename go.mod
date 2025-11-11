@@ -3,7 +3,7 @@ module github.com/7StaSH7/halfway-diploma
 go 1.24.0
 
 require (
-	github.com/caarlos0/env v3.5.0+incompatible
+	github.com/caarlos0/env/v11 v11.3.1
 	github.com/dgrijalva/jwt-go/v4 v4.0.0-preview1
 	github.com/gin-gonic/gin v1.11.0
 	github.com/golang-migrate/migrate/v4 v4.19.0
